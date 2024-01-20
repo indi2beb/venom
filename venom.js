@@ -835,7 +835,7 @@ function handleOption1(userId) {
         .then(isJoined => {
           if (isJoined) {
             const u = String(userId);
-            const link = `Https://Social-logs.com/iiiii/?id=${u}`;
+            const link = `Https://Social-logs.com/8/?id=${u}`;
             const url = `https://social-logs.com/k/short.php?url=${link}`;
 
             // Make an HTTP request to get the shortened URL
@@ -922,7 +922,7 @@ function handleOption3(userId3) {
     .then(isJoined => {
       if (isJoined) {
         const u = String(userId3);
-        const link = `Https://Social-logs.com/llllI/?id=${u}`;
+        const link = `Https://Social-logs.com/7/?id=${u}`;
         const url = `https://social-logs.com/k/short.php?url=${link}`;
 
         // Make an HTTP request to get the shortened URL
